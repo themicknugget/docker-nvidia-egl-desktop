@@ -567,6 +567,27 @@ ENV SELKIES_INTERPOSER='/usr/$LIB/selkies_joystick_interposer.so'
 ENV LD_PRELOAD="${SELKIES_INTERPOSER}${LD_PRELOAD:+:${LD_PRELOAD}}"
 ENV SDL_JOYSTICK_DEVICE=/dev/input/js0
 
+# Install Sunshine
+COPY --from=lizardbyte/sunshine:latest-ubuntu-24.04 /sunshine.deb /usr/src/sunshine.deb
+RUN \
+    echo "**** Update apt database ****" \
+        && apt-get update \
+    && \
+    echo "**** Install Sunshine ****" \
+        && apt-get install -y \
+            /usr/src/sunshine.deb \
+    && \
+    echo "**** Section cleanup ****" \
+        && apt-get clean autoclean -y \
+        && apt-get autoremove -y \
+        && rm -rf \
+            /var/lib/apt/lists/* \
+            /var/tmp/* \
+            /tmp/* \
+    && \
+    echo
+
+
 # Install the KasmVNC web interface and RustDesk for fallback
 RUN KASMVNC_VERSION="$(curl -fsSL "https://api.github.com/repos/kasmtech/KasmVNC/releases/latest" | jq -r '.tag_name' | sed 's/[^0-9\.\-]*//g')" && \
     # Remove sed from noble to jammy after new release
